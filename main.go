@@ -52,7 +52,7 @@ func storeDataInMemory(filename string) {
 			Products = append(Products, rec)
 		}
 	}
-	defer Time(time.Now(), "storeDataInMemory")
+
 }
 func main() {
 	storeDataInMemory("products.csv")
@@ -118,5 +118,6 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+	defer Time(time.Now(), "GetProducts")
 	w.Write(a)
 }
