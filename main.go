@@ -30,20 +30,27 @@ func storeDataInMemory(filename string) error {
 	defer file.Close()
 	csvReader := csv.NewReader(file)
 	data, err := csvReader.ReadAll()
+	if err != nil {
+		return err
+	}
 	for i, line := range data {
 		if i > 0 { // omit header line
 			var rec Prod
 			for j, field := range line {
 				if j == 0 {
 					rec.Id, err = strconv.Atoi(field)
-					log.Println(err)
+					if err != nil {
+						return err
+					}
 				} else if j == 1 {
 					rec.Title = field
 				} else if j == 2 {
 					rec.Description = field
 				} else if j == 3 {
 					rec.Price, err = strconv.Atoi(field)
-					log.Println(err)
+					if err != nil {
+						return err
+					}
 				} else if j == 4 {
 					rec.Brand = field
 				} else if j == 5 {
