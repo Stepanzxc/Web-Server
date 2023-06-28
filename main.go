@@ -21,7 +21,7 @@ type Prod struct {
 
 var Products []Prod
 
-func storeDataInMemory(filename string) {
+func storeDataInMemory(filename string) error {
 	//TODO::прочитать файл продуктcsv  в JSON структуре и выгрузить в память приложения, зарабатает до запуска сервера
 	file, err := os.Open(filename)
 	if err != nil {
@@ -30,18 +30,27 @@ func storeDataInMemory(filename string) {
 	defer file.Close()
 	csvReader := csv.NewReader(file)
 	data, err := csvReader.ReadAll()
+	if err != nil {
+		return err
+	}
 	for i, line := range data {
 		if i > 0 { // omit header line
 			var rec Prod
 			for j, field := range line {
 				if j == 0 {
-					rec.Id, _ = strconv.Atoi(field)
+					rec.Id, err = strconv.Atoi(field)
+					if err != nil {
+						return err
+					}
 				} else if j == 1 {
 					rec.Title = field
 				} else if j == 2 {
 					rec.Description = field
 				} else if j == 3 {
-					rec.Price, _ = strconv.Atoi(field)
+					rec.Price, err = strconv.Atoi(field)
+					if err != nil {
+						return err
+					}
 				} else if j == 4 {
 					rec.Brand = field
 				} else if j == 5 {
@@ -52,57 +61,19 @@ func storeDataInMemory(filename string) {
 			Products = append(Products, rec)
 		}
 	}
-
+	return err
 }
 func main() {
-	storeDataInMemory("products.csv")
+	err := storeDataInMemory("products.csv")
+	if err != nil {
+		log.Fatal(err)
+	}
 	http.HandleFunc("/products", GetProducts)
-	http.HandleFunc("/products/file", GetProductsFromFile)
-	err := http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 
-}
-
-func GetProductsFromFile(w http.ResponseWriter, r *http.Request) {
-	file, err := os.Open("products.csv")
-	if err != nil {
-		log.Println(err)
-	}
-	defer file.Close()
-	csvReader := csv.NewReader(file)
-	data, err := csvReader.ReadAll()
-	var prod []Prod
-	for i, line := range data {
-		if i > 0 { // omit header line
-			var rec Prod
-			for j, field := range line {
-				if j == 0 {
-					rec.Id, _ = strconv.Atoi(field)
-				} else if j == 1 {
-					rec.Title = field
-				} else if j == 2 {
-					rec.Description = field
-				} else if j == 3 {
-					rec.Price, _ = strconv.Atoi(field)
-				} else if j == 4 {
-					rec.Brand = field
-				} else if j == 5 {
-					rec.Category = field
-				}
-
-			}
-			prod = append(prod, rec)
-		}
-	}
-	a, err := json.Marshal(prod)
-	if err != nil {
-		log.Println(err)
-	}
-
-	w.Write(a)
-	defer Time(time.Now(), "GetProductsFromFile")
 }
 func Time(start time.Time, name string) {
 	elapsed := time.Since(start)
@@ -119,5 +90,8 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 	defer Time(time.Now(), "GetProducts")
-	w.Write(a)
+	_, err = w.Write(a)
+	if err != nil {
+		log.Println(err)
+	}
 }
