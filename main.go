@@ -66,11 +66,7 @@ func storeDataInMemory(filename string) error {
 		}
 
 	}
-	var products2 []Prod
-	for i := len(Products); i > 0; i-- {
-		products2 = append(products2, Products[i-1])
-	}
-	Products = products2
+
 	return err
 }
 
@@ -79,7 +75,8 @@ func main() {
 	if errr != nil {
 		log.Println(errr)
 	}
-	http.HandleFunc("/products/14", GetProduct)
+	http.HandleFunc("/products/30", GetProduct30)
+	http.HandleFunc("/products/14", GetProduct14)
 	http.HandleFunc("/products", GetProducts)
 	errr = http.ListenAndServe(":8080", nil)
 	if errr != nil {
@@ -90,7 +87,36 @@ func Time(start time.Time, name string) {
 	elapsed := time.Since(start)
 	log.Printf("%s took %s", name, elapsed)
 }
-func GetProduct(w http.ResponseWriter, r *http.Request) {
+func GetProduct30(w http.ResponseWriter, r *http.Request) {
+	if errr == nil {
+		var n int
+		for i := range Products {
+			if Products[i].Id == 30 {
+				n = i
+			}
+		}
+		a, err := json.Marshal(Products[n])
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = w.Write(a)
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		var errs Error = Error{errr.Error()}
+		log.Println(errs)
+		a, err := json.Marshal(errs)
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = w.Write(a)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+}
+func GetProduct14(w http.ResponseWriter, r *http.Request) {
 	if errr == nil {
 		var n int
 		for i := range Products {
