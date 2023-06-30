@@ -19,7 +19,7 @@ type Prod struct {
 	Category    string `json:"category"`
 }
 type Error struct {
-	Error error `json:"err"`
+	Error string `json:"err"`
 }
 
 var Products []Prod
@@ -95,7 +95,7 @@ func GetProduct(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 	} else {
-		var errs Error = Error{errr}
+		var errs Error = Error{errr.Error()}
 		log.Println(errs)
 		a, err := json.Marshal(errs)
 		if err != nil {
@@ -124,7 +124,7 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 	} else {
-		var errs Error = Error{errr}
+		var errs Error = Error{errr.Error()}
 		a, err := json.Marshal(errs)
 		if err != nil {
 			log.Println(err)
