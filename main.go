@@ -92,7 +92,13 @@ func Time(start time.Time, name string) {
 }
 func GetProduct(w http.ResponseWriter, r *http.Request) {
 	if errr == nil {
-		a, err := json.Marshal(Products[13])
+		var n int
+		for i := range Products {
+			if Products[i].Id == 14 {
+				n = i
+			}
+		}
+		a, err := json.Marshal(Products[n])
 		if err != nil {
 			log.Println(err)
 		}
