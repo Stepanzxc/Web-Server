@@ -75,6 +75,7 @@ func main() {
 	if errr != nil {
 		log.Println(errr)
 	}
+	http.HandleFunc("/products/30", GetProduct3)
 	http.HandleFunc("/products/30", GetProduct30)
 	http.HandleFunc("/products/14", GetProduct14)
 	http.HandleFunc("/products", GetProducts)
@@ -117,6 +118,35 @@ func GetProduct30(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func GetProduct14(w http.ResponseWriter, r *http.Request) {
+	if errr == nil {
+		var n int
+		for i := range Products {
+			if Products[i].Id == 14 {
+				n = i
+			}
+		}
+		a, err := json.Marshal(Products[n])
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = w.Write(a)
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		var errs Error = Error{errr.Error()}
+		log.Println(errs)
+		a, err := json.Marshal(errs)
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = w.Write(a)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+}
+func GetProduct3(w http.ResponseWriter, r *http.Request) {
 	if errr == nil {
 		var n int
 		for i := range Products {
