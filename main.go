@@ -18,8 +18,12 @@ type Prod struct {
 	Brand       string `json:"brand"`
 	Category    string `json:"category"`
 }
+type Error struct {
+	Error string `json:"err"`
+}
 
 var Products []Prod
+var errr error
 
 func storeDataInMemory(filename string) error {
 	//TODO::прочитать файл продуктcsv  в JSON структуре и выгрузить в память приложения, зарабатает до запуска сервера
@@ -63,21 +67,45 @@ func storeDataInMemory(filename string) error {
 	}
 	return err
 }
-func main() {
-	err := storeDataInMemory("products.csv")
-	if err != nil {
-		log.Fatal(err)
-	}
-	http.HandleFunc("/products", GetProducts)
-	err = http.ListenAndServe(":8080", nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
 
+func main() {
+	errr = storeDataInMemory("products.csv")
+	if errr != nil {
+		log.Println(errr)
+	}
+	http.HandleFunc("/products/14", GetProduct)
+	http.HandleFunc("/products", GetProducts)
+	errr = http.ListenAndServe(":8080", nil)
+	if errr != nil {
+		log.Println(errr)
+	}
 }
 func Time(start time.Time, name string) {
 	elapsed := time.Since(start)
 	log.Printf("%s took %s", name, elapsed)
+}
+func GetProduct(w http.ResponseWriter, r *http.Request) {
+	if errr == nil {
+		a, err := json.Marshal(Products[13])
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = w.Write(a)
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		var errs Error = Error{errr.Error()}
+		log.Println(errs)
+		a, err := json.Marshal(errs)
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = w.Write(a)
+		if err != nil {
+			log.Println(err)
+		}
+	}
 }
 
 // *http.Request - информация о запросе от клиента
@@ -85,13 +113,25 @@ func Time(start time.Time, name string) {
 func GetProducts(w http.ResponseWriter, r *http.Request) {
 
 	//TODO::нужно вывести на сервер файл в JSON формате продуктыcsv
-	a, err := json.Marshal(Products)
-	if err != nil {
-		log.Println(err)
-	}
-	defer Time(time.Now(), "GetProducts")
-	_, err = w.Write(a)
-	if err != nil {
-		log.Println(err)
+	if errr == nil {
+		a, err := json.Marshal(Products)
+		if err != nil {
+			log.Println(err)
+		}
+		defer Time(time.Now(), "GetProducts")
+		_, err = w.Write(a)
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		var errs Error = Error{errr.Error()}
+		a, err := json.Marshal(errs)
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = w.Write(a)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
