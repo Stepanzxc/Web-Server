@@ -23,6 +23,7 @@ type Error struct {
 }
 
 var Products []Prod
+var Products2 []Prod
 var errr error
 
 func storeDataInMemory(filename string) error {
@@ -64,6 +65,9 @@ func storeDataInMemory(filename string) error {
 			}
 			Products = append(Products, rec)
 		}
+	}
+	for i := len(Products); i > 0; i-- {
+		Products2 = append(Products2, Products[i-1])
 	}
 	return err
 }
@@ -114,7 +118,7 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 
 	//TODO::нужно вывести на сервер файл в JSON формате продуктыcsv
 	if errr == nil {
-		a, err := json.Marshal(Products)
+		a, err := json.Marshal(Products2)
 		if err != nil {
 			log.Println(err)
 		}
