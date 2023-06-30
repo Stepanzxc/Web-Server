@@ -75,7 +75,7 @@ func main() {
 	if errr != nil {
 		log.Println(errr)
 	}
-	http.HandleFunc("/products/30", GetProduct3)
+	http.HandleFunc("/products/3", GetProduct3)
 	http.HandleFunc("/products/30", GetProduct30)
 	http.HandleFunc("/products/14", GetProduct14)
 	http.HandleFunc("/products", GetProducts)
@@ -150,7 +150,7 @@ func GetProduct3(w http.ResponseWriter, r *http.Request) {
 	if errr == nil {
 		var n int
 		for i := range Products {
-			if Products[i].Id == 14 {
+			if Products[i].Id == 3 {
 				n = i
 			}
 		}
