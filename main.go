@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -18,6 +17,9 @@ type Prod struct {
 	Price       int    `json:"price"`
 	Brand       string `json:"brand"`
 	Category    string `json:"category"`
+}
+type Error struct {
+	Error error `json:"err"`
 }
 
 var Products []Prod
@@ -93,7 +95,16 @@ func GetProduct(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 	} else {
-		fmt.Fprintf(w, errr.Error())
+		var errs Error = Error{errr}
+		log.Println(errs)
+		a, err := json.Marshal(errs)
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = w.Write(a)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
@@ -113,6 +124,14 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 	} else {
-		fmt.Fprintf(w, errr.Error())
+		var errs Error = Error{errr}
+		a, err := json.Marshal(errs)
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = w.Write(a)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
