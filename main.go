@@ -66,11 +66,11 @@ func storeDataInMemory(filename string) error {
 		}
 
 	}
-	var Products2 []Prod
+	var products2 []Prod
 	for i := len(Products); i > 0; i-- {
-		Products2 = append(Products2, Products[i-1])
+		products2 = append(products2, Products[i-1])
 	}
-	Products = Products2
+	Products = products2
 	return err
 }
 
