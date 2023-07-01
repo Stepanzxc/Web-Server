@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 )
 
 type Prod struct {
@@ -25,6 +24,18 @@ type Error struct {
 var Products []Prod
 var errr error
 
+func ErrorFun(w http.ResponseWriter) {
+	var errs Error = Error{errr.Error()}
+	log.Println(errs)
+	a, err := json.Marshal(errs)
+	if err != nil {
+		log.Println(err)
+	}
+	_, err = w.Write(a)
+	if err != nil {
+		log.Println(err)
+	}
+}
 func storeDataInMemory(filename string) error {
 	//TODO::прочитать файл продуктcsv  в JSON структуре и выгрузить в память приложения, зарабатает до запуска сервера
 	file, err := os.Open(filename)
@@ -69,111 +80,60 @@ func storeDataInMemory(filename string) error {
 
 	return err
 }
-
+func GetSomeProduct(w http.ResponseWriter, r *http.Request, n int) {
+	if errr == nil {
+		for i := range Products {
+			if Products[i].Id == n {
+				n = i
+			}
+		}
+		a, err := json.Marshal(Products[n])
+		if err != nil {
+			log.Println(err)
+			Responce(w, a)
+		}
+		Responce(w, a)
+	} else {
+		ErrorFun(w)
+	}
+}
+func Responce(w http.ResponseWriter, a []byte) {
+	if errr == nil {
+		_, err := w.Write(a)
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		ErrorFun(w)
+	}
+}
 func main() {
 	errr = storeDataInMemory("products.csv")
 	if errr != nil {
 		log.Println(errr)
 	}
 	http.HandleFunc("/products/3", GetProduct3)
-	http.HandleFunc("/products/30", GetProduct30)
 	http.HandleFunc("/products/14", GetProduct14)
+	http.HandleFunc("/products/17", GetProduct17)
+	http.HandleFunc("/products/30", GetProduct30)
 	http.HandleFunc("/products", GetProducts)
 	errr = http.ListenAndServe(":8080", nil)
 	if errr != nil {
 		log.Println(errr)
 	}
 }
-func Time(start time.Time, name string) {
-	elapsed := time.Since(start)
-	log.Printf("%s took %s", name, elapsed)
+func GetProduct17(w http.ResponseWriter, r *http.Request) {
+	GetSomeProduct(w, r, 17)
 }
 func GetProduct30(w http.ResponseWriter, r *http.Request) {
-	if errr == nil {
-		var n int
-		for i := range Products {
-			if Products[i].Id == 30 {
-				n = i
-			}
-		}
-		a, err := json.Marshal(Products[n])
-		if err != nil {
-			log.Println(err)
-		}
-		_, err = w.Write(a)
-		if err != nil {
-			log.Println(err)
-		}
-	} else {
-		var errs Error = Error{errr.Error()}
-		log.Println(errs)
-		a, err := json.Marshal(errs)
-		if err != nil {
-			log.Println(err)
-		}
-		_, err = w.Write(a)
-		if err != nil {
-			log.Println(err)
-		}
-	}
+	GetSomeProduct(w, r, 30)
+
 }
 func GetProduct14(w http.ResponseWriter, r *http.Request) {
-	if errr == nil {
-		var n int
-		for i := range Products {
-			if Products[i].Id == 14 {
-				n = i
-			}
-		}
-		a, err := json.Marshal(Products[n])
-		if err != nil {
-			log.Println(err)
-		}
-		_, err = w.Write(a)
-		if err != nil {
-			log.Println(err)
-		}
-	} else {
-		var errs Error = Error{errr.Error()}
-		log.Println(errs)
-		a, err := json.Marshal(errs)
-		if err != nil {
-			log.Println(err)
-		}
-		_, err = w.Write(a)
-		if err != nil {
-			log.Println(err)
-		}
-	}
+	GetSomeProduct(w, r, 14)
 }
 func GetProduct3(w http.ResponseWriter, r *http.Request) {
-	if errr == nil {
-		var n int
-		for i := range Products {
-			if Products[i].Id == 3 {
-				n = i
-			}
-		}
-		a, err := json.Marshal(Products[n])
-		if err != nil {
-			log.Println(err)
-		}
-		_, err = w.Write(a)
-		if err != nil {
-			log.Println(err)
-		}
-	} else {
-		var errs Error = Error{errr.Error()}
-		log.Println(errs)
-		a, err := json.Marshal(errs)
-		if err != nil {
-			log.Println(err)
-		}
-		_, err = w.Write(a)
-		if err != nil {
-			log.Println(err)
-		}
-	}
+	GetSomeProduct(w, r, 3)
 }
 
 // *http.Request - информация о запросе от клиента
@@ -181,25 +141,9 @@ func GetProduct3(w http.ResponseWriter, r *http.Request) {
 func GetProducts(w http.ResponseWriter, r *http.Request) {
 
 	//TODO::нужно вывести на сервер файл в JSON формате продуктыcsv
-	if errr == nil {
-		a, err := json.Marshal(Products)
-		if err != nil {
-			log.Println(err)
-		}
-		defer Time(time.Now(), "GetProducts")
-		_, err = w.Write(a)
-		if err != nil {
-			log.Println(err)
-		}
-	} else {
-		var errs Error = Error{errr.Error()}
-		a, err := json.Marshal(errs)
-		if err != nil {
-			log.Println(err)
-		}
-		_, err = w.Write(a)
-		if err != nil {
-			log.Println(err)
-		}
+	a, err := json.Marshal(Products)
+	if err != nil {
+		log.Println(err)
 	}
+	Responce(w, a)
 }
