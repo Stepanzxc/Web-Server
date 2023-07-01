@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 type Prod struct {
@@ -102,41 +104,33 @@ func Responce(w http.ResponseWriter, a []byte) {
 	}
 
 }
+
 func main() {
 	err := storeDataInMemory("products.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.HandleFunc("/products/3", GetProduct3)
-	http.HandleFunc("/products/14", GetProduct14)
-	http.HandleFunc("/products/17", GetProduct17)
-	http.HandleFunc("/products/30", GetProduct30)
-	http.HandleFunc("/products", GetProducts)
-	err = http.ListenAndServe(":8080", nil)
+
+	r := mux.NewRouter()
+	r.HandleFunc("/products/{id}", GetProductById)
+	r.HandleFunc("/products", GetProducts)
+	err = http.ListenAndServe(":8080", r)
 	if err != nil {
 		log.Println(err)
 	}
+	//ToDo: получить все гет продукты через новую библеотеку
 }
-
-func GetProduct17(w http.ResponseWriter, r *http.Request) {
-
-	GetSomeProduct(w, r, 17)
-}
-func GetProduct30(w http.ResponseWriter, r *http.Request) {
-	GetSomeProduct(w, r, 30)
-
-}
-func GetProduct14(w http.ResponseWriter, r *http.Request) {
-	GetSomeProduct(w, r, 14)
-}
-func GetProduct3(w http.ResponseWriter, r *http.Request) {
-	GetSomeProduct(w, r, 3)
+func GetProductById(w http.ResponseWriter, r *http.Request) {
+	i, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		log.Println(err)
+	}
+	GetSomeProduct(w, r, i)
 }
 
 // *http.Request - информация о запросе от клиента
 // http.ResponseWriter - что сервер ответит клиенту
 func GetProducts(w http.ResponseWriter, r *http.Request) {
-
 	//TODO::нужно вывести на сервер файл в JSON формате продуктыcsv
 	a, err := json.Marshal(Products)
 	if err != nil {
