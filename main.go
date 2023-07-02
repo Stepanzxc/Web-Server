@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -81,10 +82,17 @@ func ErrorFun(w http.ResponseWriter, err error) {
 	}
 }
 func GetSomeProduct(w http.ResponseWriter, r *http.Request, n int) {
+	x := false
 	for i := range Products {
 		if Products[i].Id == n {
 			n = i
+			x = true
 		}
+	}
+	if !x {
+		errN := errors.New("product does not exists")
+		ErrorFun(w, errN)
+		return
 	}
 	a, err := json.Marshal(Products[n])
 	if err != nil {
