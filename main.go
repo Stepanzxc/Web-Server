@@ -25,7 +25,6 @@ type Error struct {
 }
 
 var Products []Prod
-var Err Error
 
 func storeDataInMemory(filename string) error {
 	//TODO::прочитать файл продуктcsv  в JSON структуре и выгрузить в память приложения, зарабатает до запуска сервера
