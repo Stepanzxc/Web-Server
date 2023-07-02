@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -24,6 +25,7 @@ type Error struct {
 }
 
 var Products []Prod
+var Err Error
 
 func storeDataInMemory(filename string) error {
 	//TODO::прочитать файл продуктcsv  в JSON структуре и выгрузить в память приложения, зарабатает до запуска сервера
@@ -86,9 +88,15 @@ func GetSomeProduct(w http.ResponseWriter, r *http.Request, n int) {
 			n = i
 		}
 	}
+
+	if 0 > n || n > len(Products) {
+		errN := errors.New("product does not exists")
+		ErrorFun(w, errN)
+		return
+	}
 	a, err := json.Marshal(Products[n])
 	if err != nil {
-		log.Println(err)
+		log.Println("qqqqqqqqqqqqq")
 		ErrorFun(w, err)
 		return
 	}
