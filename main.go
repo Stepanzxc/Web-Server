@@ -82,20 +82,21 @@ func ErrorFun(w http.ResponseWriter, err error) {
 	}
 }
 func GetSomeProduct(w http.ResponseWriter, r *http.Request, n int) {
+	x := false
 	for i := range Products {
 		if Products[i].Id == n {
 			n = i
+			x = true
 		}
 	}
-
-	if 0 > n || n > len(Products) {
+	if !x {
 		errN := errors.New("product does not exists")
 		ErrorFun(w, errN)
 		return
 	}
 	a, err := json.Marshal(Products[n])
 	if err != nil {
-		log.Println("qqqqqqqqqqqqq")
+		log.Println(err)
 		ErrorFun(w, err)
 		return
 	}
