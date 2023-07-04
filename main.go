@@ -135,7 +135,7 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 		ErrorFun(w, err)
 
 	}
-	payload.Id = (Products[len(Products)].Id) + 1
+	payload.Id = (Products[len(Products)-1].Id) + 1
 	Products = append(Products, payload)
 }
 func UpdateByID(w http.ResponseWriter, r *http.Request) {
