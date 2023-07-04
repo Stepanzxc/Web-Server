@@ -71,6 +71,7 @@ func storeDataInMemory(filename string) error {
 	return err
 }
 func ErrorFun(w http.ResponseWriter, err error) {
+	w.Header().Set("Content-Type", "application/json")
 	var e Error = Error{err.Error()}
 	a, err := json.Marshal(e)
 	if err != nil {
@@ -81,15 +82,28 @@ func ErrorFun(w http.ResponseWriter, err error) {
 		log.Println(err)
 	}
 }
-func GetSomeProduct(w http.ResponseWriter, r *http.Request, n int) {
-	x := false
+func GetId(w http.ResponseWriter, r *http.Request) int {
+	n, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		log.Println(err)
+	}
+	return n
+}
+func GetSomeProduct(w http.ResponseWriter, r *http.Request) {
+	n := GetId(w, r)
+	if n < 0 || n > len(Products) {
+		errN := errors.New("product does not exists")
+		ErrorFun(w, errN)
+		return
+	}
+	b := false
 	for i := range Products {
 		if Products[i].Id == n {
 			n = i
-			x = true
+			b = true
 		}
 	}
-	if !x {
+	if !b {
 		errN := errors.New("product does not exists")
 		ErrorFun(w, errN)
 		return
@@ -103,7 +117,9 @@ func GetSomeProduct(w http.ResponseWriter, r *http.Request, n int) {
 	Responce(w, a)
 
 }
+
 func Responce(w http.ResponseWriter, a []byte) {
+	w.Header().Set("Content-Type", "application/json")
 	_, err := w.Write(a)
 	if err != nil {
 		log.Println(err)
@@ -112,7 +128,62 @@ func Responce(w http.ResponseWriter, a []byte) {
 	}
 
 }
+func CreateProduct(w http.ResponseWriter, r *http.Request) {
+	//ToDo::1 создать добавление нового продукта и функцию удаления продукта по id и метод патч по обновеннию
+	var payload Prod
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		ErrorFun(w, err)
 
+	}
+	payload.Id = (Products[len(Products)-1].Id) + 1
+	Products = append(Products, payload)
+}
+func UpdateByID(w http.ResponseWriter, r *http.Request) {
+	n := GetId(w, r)
+	if n < 0 || n > len(Products) {
+		errN := errors.New("product does not exists")
+		ErrorFun(w, errN)
+		return
+	}
+	var upP Prod
+	if err := json.NewDecoder(r.Body).Decode(&upP); err != nil {
+		ErrorFun(w, err)
+		return
+	}
+	upP.Id = n
+	b := false
+	for i := range Products {
+		if Products[i].Id == n {
+			n = i
+			b = true
+		}
+	}
+	if !b {
+		errN := errors.New("product does not exists")
+		ErrorFun(w, errN)
+		return
+	}
+	Products[n] = upP
+}
+func DeleteByID(w http.ResponseWriter, r *http.Request) {
+	n := GetId(w, r)
+	if n < 0 || n > len(Products) {
+		errN := errors.New("product does not exists")
+		ErrorFun(w, errN)
+		return
+	}
+	for i := range Products {
+		if Products[i].Id == n {
+			n = i
+			break
+		}
+	}
+	var t Prod
+	log.Println(n)
+	copy(Products[n:], Products[n+1:])
+	Products[len(Products)-1] = t
+	Products = Products[:len(Products)-1]
+}
 func main() {
 	err := storeDataInMemory("products.csv")
 	if err != nil {
@@ -120,8 +191,11 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/products/{id}", GetProductById)
-	r.HandleFunc("/products", GetProducts)
+	r.HandleFunc("/products/{id}", GetProductById).Methods("GET")
+	r.HandleFunc("/products/{id}", UpdateByID).Methods("PATCH")
+	r.HandleFunc("/products/{id}", DeleteByID).Methods("DELETE")
+	r.HandleFunc("/products", GetProducts).Methods("GET")
+	r.HandleFunc("/products", CreateProduct).Methods("POST")
 	err = http.ListenAndServe(":8080", r)
 	if err != nil {
 		log.Println(err)
@@ -129,11 +203,8 @@ func main() {
 	//ToDo: получить все гет продукты через новую библеотеку
 }
 func GetProductById(w http.ResponseWriter, r *http.Request) {
-	i, err := strconv.Atoi(mux.Vars(r)["id"])
-	if err != nil {
-		log.Println(err)
-	}
-	GetSomeProduct(w, r, i)
+
+	GetSomeProduct(w, r)
 }
 
 // *http.Request - информация о запросе от клиента
