@@ -9,28 +9,21 @@ import (
 	"os"
 	"strconv"
 
+	"web-server/handles"
+	"web-server/models"
+	"web-server/response"
+
 	"github.com/gorilla/mux"
 )
 
-type Prod struct {
-	Id          int    `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Price       int    `json:"price"`
-	Brand       string `json:"brand"`
-	Category    string `json:"category"`
-}
-type Error struct {
-	Error string `json:"err"`
-}
+const serverPort = "8080"
 
-var Products []Prod
-
+// storeDataInMemory ...
+// TODO:: создай пакет event и вынести эту функцию туда
 func storeDataInMemory(filename string) error {
-	//TODO::прочитать файл продуктcsv  в JSON структуре и выгрузить в память приложения, зарабатает до запуска сервера
 	file, err := os.Open(filename)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	defer file.Close()
 	csvReader := csv.NewReader(file)
@@ -40,7 +33,7 @@ func storeDataInMemory(filename string) error {
 	}
 	for i, line := range data {
 		if i > 0 { // omit header line
-			var rec Prod
+			var rec models.Prod
 			for j, field := range line {
 				if j == 0 {
 					rec.Id, err = strconv.Atoi(field)
@@ -63,17 +56,17 @@ func storeDataInMemory(filename string) error {
 				}
 
 			}
-			Products = append(Products, rec)
+			models.Products = append(models.Products, rec)
 		}
 
 	}
 
 	return err
 }
+
 func ErrorFun(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
-	var e Error = Error{err.Error()}
-	a, err := json.Marshal(e)
+	a, err := json.Marshal(response.Error{err.Error()})
 	if err != nil {
 		log.Println(err)
 	}
@@ -82,108 +75,141 @@ func ErrorFun(w http.ResponseWriter, err error) {
 		log.Println(err)
 	}
 }
-func GetId(w http.ResponseWriter, r *http.Request) int {
-	n, err := strconv.Atoi(mux.Vars(r)["id"])
+
+// GetId Получаем ID из URL's
+func GetId(id string) int {
+	n, err := strconv.Atoi(id)
 	if err != nil {
-		log.Println(err)
+		return 0
 	}
 	return n
 }
-func GetSomeProduct(w http.ResponseWriter, r *http.Request) {
-	n := GetId(w, r)
-	if n < 0 || n > len(Products) {
-		errN := errors.New("product does not exists")
-		ErrorFun(w, errN)
-		return
-	}
-	b := false
-	for i := range Products {
-		if Products[i].Id == n {
-			n = i
-			b = true
+
+// findProductByID поиск продукта по ID
+func findProductByID(id int) (models.Prod, error) {
+	var result models.Prod
+	for i := range models.Products {
+		if models.Products[i].Id == id {
+			result = models.Products[i]
+			break
 		}
 	}
-	if !b {
-		errN := errors.New("product does not exists")
-		ErrorFun(w, errN)
-		return
-	}
-	a, err := json.Marshal(Products[n])
-	if err != nil {
-		log.Println(err)
-		ErrorFun(w, err)
-		return
-	}
-	Responce(w, a)
 
+	if result.Id == 0 {
+		return models.Prod{}, errors.New("product does not exists")
+	}
+	return result, nil
 }
 
-func Responce(w http.ResponseWriter, a []byte) {
+// findProductByID поиск продукта по ID
+func findIndexProductByID(id int) (int, error) {
+	for i := range models.Products {
+		if models.Products[i].Id == id {
+			return i, nil
+		}
+	}
+	return 0, errors.New("product index does not exists")
+}
+
+// Response ...
+func Response(w http.ResponseWriter, a any) {
 	w.Header().Set("Content-Type", "application/json")
-	_, err := w.Write(a)
+	response, err := json.Marshal(a)
 	if err != nil {
-		log.Println(err)
 		ErrorFun(w, err)
 		return
 	}
-
+	if _, err := w.Write(response); err != nil {
+		ErrorFun(w, err)
+		return
+	}
 }
+
+// CreateProduct Создание функции
 func CreateProduct(w http.ResponseWriter, r *http.Request) {
-	//ToDo::1 создать добавление нового продукта и функцию удаления продукта по id и метод патч по обновеннию
-	var payload Prod
+	var payload models.Prod
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		ErrorFun(w, err)
 
 	}
-	payload.Id = (Products[len(Products)-1].Id) + 1
-	Products = append(Products, payload)
+	payload.Id = (models.Products[len(models.Products)-1].Id) + 1
+	models.Products = append(models.Products, payload)
+	//Возвращаем клиенту что создали
+	Response(w, payload)
+
 }
+
+// UpdateByID Обновление продукта
 func UpdateByID(w http.ResponseWriter, r *http.Request) {
-	n := GetId(w, r)
-	if n < 0 || n > len(Products) {
-		errN := errors.New("product does not exists")
-		ErrorFun(w, errN)
+	id := GetId(mux.Vars(r)["id"])
+	if id <= 0 {
+		ErrorFun(w, errors.New("invalid id"))
 		return
 	}
-	var upP Prod
-	if err := json.NewDecoder(r.Body).Decode(&upP); err != nil {
+
+	var payload models.Prod
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		ErrorFun(w, err)
 		return
 	}
-	upP.Id = n
-	b := false
-	for i := range Products {
-		if Products[i].Id == n {
-			n = i
-			b = true
-		}
-	}
-	if !b {
-		errN := errors.New("product does not exists")
-		ErrorFun(w, errN)
+
+	product, err := findProductByID(id)
+	if err != nil {
+		ErrorFun(w, err)
 		return
 	}
-	Products[n] = upP
+
+	//Если в теле запроса передано значние то нужно перезаписать это значние
+	if len(payload.Brand) > 0 {
+		product.Brand = payload.Brand
+	}
+	if len(payload.Title) > 0 {
+		product.Title = payload.Title
+	}
+	if len(payload.Description) > 0 {
+		product.Description = payload.Description
+	}
+	if len(payload.Category) > 0 {
+		product.Category = payload.Category
+	}
+	if payload.Price > 0 {
+		product.Price = payload.Price
+	}
+
+	index, err := findIndexProductByID(id)
+	if err != nil {
+		ErrorFun(w, err)
+		return
+	}
+	models.Products[index] = product
+
+	//Возвращаем клиенту что обновили
+	Response(w, product)
 }
+
+// removeByIndex удаление занчения по index
+func removeByIndex(slice []models.Prod, s int) []models.Prod {
+	return append(slice[:s], slice[s+1:]...)
+}
+
+// DeleteByID ...
 func DeleteByID(w http.ResponseWriter, r *http.Request) {
-	n := GetId(w, r)
-	if n < 0 || n > len(Products) {
-		errN := errors.New("product does not exists")
-		ErrorFun(w, errN)
+	id := GetId(mux.Vars(r)["id"])
+	if id <= 0 {
+		ErrorFun(w, errors.New("invalid id"))
 		return
 	}
-	for i := range Products {
-		if Products[i].Id == n {
-			n = i
-			break
-		}
+	index, err := findIndexProductByID(id)
+	if err != nil {
+		ErrorFun(w, err)
+		return
 	}
-	var t Prod
-	log.Println(n)
-	copy(Products[n:], Products[n+1:])
-	Products[len(Products)-1] = t
-	Products = Products[:len(Products)-1]
+	models.Products = removeByIndex(models.Products, index)
+
+	//Возвращаем клиенту что обновили
+	Response(w, map[string]bool{"status": true})
 }
+
 func main() {
 	err := storeDataInMemory("products.csv")
 	if err != nil {
@@ -191,30 +217,30 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/products/{id}", GetProductById).Methods("GET")
-	r.HandleFunc("/products/{id}", UpdateByID).Methods("PATCH")
-	r.HandleFunc("/products/{id}", DeleteByID).Methods("DELETE")
-	r.HandleFunc("/products", GetProducts).Methods("GET")
-	r.HandleFunc("/products", CreateProduct).Methods("POST")
-	err = http.ListenAndServe(":8080", r)
-	if err != nil {
+	r.HandleFunc("/products/{id}", GetProductById).Methods("GET") // TODO:: handles
+	r.HandleFunc("/products/{id}", UpdateByID).Methods("PATCH")   // TODO:: handles
+	r.HandleFunc("/products/{id}", DeleteByID).Methods("DELETE")  // TODO:: handles
+	r.HandleFunc("/products", CreateProduct).Methods("POST")      // TODO:: handles
+	//
+	r.HandleFunc("/products", handles.GetProducts).Methods("GET")
+	log.Printf("Server start on port %s\n", serverPort)
+	if err := http.ListenAndServe(":"+serverPort, r); err != nil {
 		log.Println(err)
 	}
-	//ToDo: получить все гет продукты через новую библеотеку
 }
+
+// GetProductById ...
 func GetProductById(w http.ResponseWriter, r *http.Request) {
+	id := GetId(mux.Vars(r)["id"])
+	if id <= 0 {
+		ErrorFun(w, errors.New("invalid id"))
+		return
+	}
 
-	GetSomeProduct(w, r)
-}
-
-// *http.Request - информация о запросе от клиента
-// http.ResponseWriter - что сервер ответит клиенту
-func GetProducts(w http.ResponseWriter, r *http.Request) {
-	//TODO::нужно вывести на сервер файл в JSON формате продуктыcsv
-	a, err := json.Marshal(Products)
+	product, err := findProductByID(id)
 	if err != nil {
 		ErrorFun(w, err)
 		return
 	}
-	Responce(w, a)
+	Response(w, product)
 }
