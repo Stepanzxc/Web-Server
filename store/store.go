@@ -8,7 +8,7 @@ import (
 	"web-server/models"
 )
 
-func storeDataInMemory(filename string) error {
+func StoreDataInMemory(filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Println(err)

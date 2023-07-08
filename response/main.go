@@ -23,7 +23,6 @@ func Response(w http.ResponseWriter, a any) {
 		return
 	}
 }
-
 func ErrorFun(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
 	a, err := json.Marshal(Error{err.Error()})
