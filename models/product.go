@@ -1,7 +1,7 @@
 package models
 
 var Products []Prod
-var Providers []Provid
+var Providers []Prov
 
 type Prod struct {
 	Id          int    `json:"id"`
@@ -12,7 +12,7 @@ type Prod struct {
 	Category    string `json:"category"`
 	ProviderId  int    `json:"providerId"`
 }
-type Provid struct {
+type Prov struct {
 	Id        int    `json:"id"`
 	Title     string `json:"title"`
 	CreatedAt string `json:"createdTime"`

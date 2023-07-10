@@ -34,7 +34,7 @@ func GetProvidersById(w http.ResponseWriter, r *http.Request) {
 	response.Response(w, product)
 }
 func CreateProvider(w http.ResponseWriter, r *http.Request) {
-	var payload models.Provid
+	var payload models.Prov
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		response.ErrorFun(w, err)
 
@@ -53,7 +53,7 @@ func UpdateProviderByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var payload models.Provid
+	var payload models.Prov
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		response.ErrorFun(w, err)
 		return

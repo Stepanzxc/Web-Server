@@ -15,7 +15,7 @@ func ProvidersInMemory(filename string) error {
 	}
 	for i, line := range data {
 		if i > 0 { // omit header line
-			var rec models.Provid
+			var rec models.Prov
 			for j, field := range line {
 				if j == 0 {
 					rec.Id, err = strconv.Atoi(field)

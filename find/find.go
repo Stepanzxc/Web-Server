@@ -20,8 +20,8 @@ func FindProductByID(id int) (models.Prod, error) {
 	}
 	return result, nil
 }
-func FindProviderByID(id int) (models.Provid, error) {
-	var result models.Provid
+func FindProviderByID(id int) (models.Prov, error) {
+	var result models.Prov
 	for i := range models.Providers {
 		if models.Providers[i].Id == id {
 			result = models.Providers[i]
@@ -30,7 +30,7 @@ func FindProviderByID(id int) (models.Provid, error) {
 	}
 
 	if result.Id == 0 {
-		return models.Provid{}, errors.New("provider does not exists")
+		return models.Prov{}, errors.New("provider does not exists")
 	}
 	return result, nil
 }
