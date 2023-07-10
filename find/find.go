@@ -20,6 +20,28 @@ func FindProductByID(id int) (models.Prod, error) {
 	}
 	return result, nil
 }
+func FindProviderByID(id int) (models.Prov, error) {
+	var result models.Prov
+	for i := range models.Providers {
+		if models.Providers[i].Id == id {
+			result = models.Providers[i]
+			break
+		}
+	}
+
+	if result.Id == 0 {
+		return models.Prov{}, errors.New("provider does not exists")
+	}
+	return result, nil
+}
+func FindIndexProviderByID(id int) (int, error) {
+	for i := range models.Providers {
+		if models.Providers[i].Id == id {
+			return i, nil
+		}
+	}
+	return 0, errors.New("provider index does not exists")
+}
 
 // findProductByID поиск продукта по ID
 func FindIndexProductByID(id int) (int, error) {
