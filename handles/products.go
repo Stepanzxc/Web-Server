@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
 	"web-server/find"
 	"web-server/gets"
@@ -14,12 +15,95 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func GetProviders(w http.ResponseWriter, r *http.Request) {
+	response.Response(w, models.Providers)
+}
+func GetProvidersById(w http.ResponseWriter, r *http.Request) {
+	id := gets.GetId(mux.Vars(r)["id"])
+	if id <= 0 {
+		response.ErrorFun(w, errors.New("invalid id"))
+		return
+	}
+
+	product, err := find.FindProviderByID(id)
+	if err != nil {
+		response.ErrorFun(w, err)
+		return
+	}
+	response.Response(w, product)
+}
+func CreateProvider(w http.ResponseWriter, r *http.Request) {
+	var payload models.Provid
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		response.ErrorFun(w, err)
+
+	}
+	payload.Id = (models.Providers[len(models.Providers)-1].Id) + 1
+	payload.CreatedAt = time.Now().Format("2006-01-02T15:04:05Z07:00")
+	payload.Status = "active"
+	models.Providers = append(models.Providers, payload)
+	//Возвращаем клиенту что создали
+	response.Response(w, payload)
+}
+func UpdateProviderByID(w http.ResponseWriter, r *http.Request) {
+	id := gets.GetId(mux.Vars(r)["id"])
+	if id <= 0 {
+		response.ErrorFun(w, errors.New("invalid id"))
+		return
+	}
+
+	var payload models.Provid
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		response.ErrorFun(w, err)
+		return
+	}
+	provid, err := find.FindProviderByID(id)
+	if err != nil {
+		response.ErrorFun(w, err)
+		return
+	}
+	//Если в теле запроса передано значние то нужно перезаписать это значние
+	provid.Title = payload.Title
+	index, err := find.FindIndexProviderByID(id)
+	if err != nil {
+		response.ErrorFun(w, err)
+		return
+	}
+	models.Providers[index] = provid
+
+	//Возвращаем клиенту что обновили
+	response.Response(w, provid)
+}
+func DeleteProviderByID(w http.ResponseWriter, r *http.Request) {
+	id := gets.GetId(mux.Vars(r)["id"])
+	if id <= 0 {
+		response.ErrorFun(w, errors.New("invalid id"))
+		return
+	}
+	provid, err := find.FindProviderByID(id)
+	if err != nil {
+		response.ErrorFun(w, err)
+		return
+	}
+	provid.Status = "disabled"
+	index, err := find.FindIndexProviderByID(id)
+	if err != nil {
+		response.ErrorFun(w, err)
+		return
+	}
+	models.Providers[index] = provid
+
+	//Возвращаем клиенту что обновили
+	response.Response(w, map[string]bool{"status": true})
+}
+
 // GetProducts вывводим все продукты...
 // *http.Request - информация о запросе от клиента
 // http.ResponseWriter - что сервер ответит клиенту
 func GetProducts(w http.ResponseWriter, r *http.Request) {
 	response.Response(w, models.Products)
 }
+
 func GetProductById(w http.ResponseWriter, r *http.Request) {
 	id := gets.GetId(mux.Vars(r)["id"])
 	if id <= 0 {
@@ -105,11 +189,23 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 	var payload models.Prod
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		response.ErrorFun(w, err)
-
 	}
 	payload.Id = (models.Products[len(models.Products)-1].Id) + 1
 	models.Products = append(models.Products, payload)
 	//Возвращаем клиенту что создали
 	response.Response(w, payload)
-
+}
+func GetProductsByProviders(w http.ResponseWriter, r *http.Request) {
+	id := gets.GetId(mux.Vars(r)["id"])
+	if id <= 0 {
+		response.ErrorFun(w, errors.New("invalid id"))
+		return
+	}
+	var res []models.Prod
+	for i := range models.Products {
+		if models.Products[i].ProviderId == id {
+			res = append(res, models.Products[i])
+		}
+	}
+	response.Response(w, res)
 }
