@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 	"time"
 
 	"web-server/find"
@@ -101,7 +102,23 @@ func DeleteProviderByID(w http.ResponseWriter, r *http.Request) {
 // *http.Request - информация о запросе от клиента
 // http.ResponseWriter - что сервер ответит клиенту
 func GetProducts(w http.ResponseWriter, r *http.Request) {
-	response.Response(w, models.Products)
+	providerId := r.URL.Query().Get("provider_id")
+	id, err := strconv.Atoi(providerId)
+	if err != nil {
+		response.Response(w, models.Products)
+		return
+	}
+	var res []models.Prod
+	for i := range models.Products {
+		if models.Products[i].ProviderId == id {
+			res = append(res, models.Products[i])
+		}
+	}
+	if res == nil {
+		response.ErrorFun(w, errors.New("invalid id"))
+		return
+	}
+	response.Response(w, res)
 }
 
 func GetProductById(w http.ResponseWriter, r *http.Request) {
@@ -194,18 +211,4 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 	models.Products = append(models.Products, payload)
 	//Возвращаем клиенту что создали
 	response.Response(w, payload)
-}
-func GetProductsByProviders(w http.ResponseWriter, r *http.Request) {
-	id := gets.GetId(mux.Vars(r)["id"])
-	if id <= 0 {
-		response.ErrorFun(w, errors.New("invalid id"))
-		return
-	}
-	var res []models.Prod
-	for i := range models.Products {
-		if models.Products[i].ProviderId == id {
-			res = append(res, models.Products[i])
-		}
-	}
-	response.Response(w, res)
 }

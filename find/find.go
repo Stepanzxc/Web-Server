@@ -30,7 +30,7 @@ func FindProviderByID(id int) (models.Provid, error) {
 	}
 
 	if result.Id == 0 {
-		return models.Provid{}, errors.New("product does not exists")
+		return models.Provid{}, errors.New("provider does not exists")
 	}
 	return result, nil
 }
@@ -40,7 +40,7 @@ func FindIndexProviderByID(id int) (int, error) {
 			return i, nil
 		}
 	}
-	return 0, errors.New("product index does not exists")
+	return 0, errors.New("provider index does not exists")
 }
 
 // findProductByID поиск продукта по ID

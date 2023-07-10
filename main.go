@@ -33,7 +33,6 @@ func main() {
 	r.HandleFunc("/products/{id}", handles.DeleteByID).Methods("DELETE")  // TODO:: handles
 	r.HandleFunc("/products", handles.CreateProduct).Methods("POST")      // TODO:: handles
 	r.HandleFunc("/products", handles.GetProducts).Methods("GET")
-	r.HandleFunc("/products?provider_id={id}", handles.GetProductsByProviders).Methods("GET")
 	log.Printf("Server start on port %s\n", serverPort)
 	if err := http.ListenAndServe(":"+serverPort, r); err != nil {
 		log.Println(err)
