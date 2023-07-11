@@ -13,11 +13,11 @@ import (
 const serverPort = "8080"
 
 func main() {
-	err := store.StoreDataInMemory("products.csv")
+	err := store.StoreDataInMemory()
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = store.ProvidersInMemory("providers.csv")
+	err = store.ProvidersInMemory()
 	if err != nil {
 		log.Fatal(err)
 	}
