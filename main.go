@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"web-server/handles"
-	"web-server/models"
 	"web-server/store"
 
 	"github.com/gorilla/mux"
@@ -22,8 +21,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(models.Products)
-	log.Println(models.Providers)
 	r := mux.NewRouter()
 	r.HandleFunc("/providers", handles.GetProviders).Methods("GET")
 	r.HandleFunc("/providers/{id}", handles.GetProvidersById).Methods("GET")
