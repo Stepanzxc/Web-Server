@@ -18,6 +18,7 @@ func ProvidersInMemory() error {
 	}
 	return nil
 }
+
 func StoreDataInMemory() error {
 	file, err := os.OpenFile("products.csv", os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
