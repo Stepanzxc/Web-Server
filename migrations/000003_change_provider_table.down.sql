@@ -1,0 +1,2 @@
+ALTER TABLE provider
+ALTER COLUMN status DROP DEFAULT;
