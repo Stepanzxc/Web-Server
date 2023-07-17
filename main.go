@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"web-server/database"
 	"web-server/handles"
 	"web-server/store"
 
@@ -13,6 +14,9 @@ import (
 const serverPort = "8080"
 
 func main() {
+	//делаем соединение с mysql
+	database.NewMySQL()
+
 	err := store.StoreDataInMemory()
 	if err != nil {
 		log.Fatal(err)
@@ -28,10 +32,10 @@ func main() {
 	r.HandleFunc("/providers/{id}", handles.UpdateProviderByID).Methods("PATCH")
 	r.HandleFunc("/providers/{id}", handles.DeleteProviderByID).Methods("DELETE")
 
-	r.HandleFunc("/products/{id}", handles.GetProductById).Methods("GET") // TODO:: handles
-	r.HandleFunc("/products/{id}", handles.UpdateByID).Methods("PATCH")   // TODO:: handles
-	r.HandleFunc("/products/{id}", handles.DeleteByID).Methods("DELETE")  // TODO:: handles
-	r.HandleFunc("/products", handles.CreateProduct).Methods("POST")      // TODO:: handles
+	r.HandleFunc("/products/{id}", handles.GetProductById).Methods("GET")
+	r.HandleFunc("/products/{id}", handles.UpdateByID).Methods("PATCH")
+	r.HandleFunc("/products/{id}", handles.DeleteByID).Methods("DELETE")
+	r.HandleFunc("/products", handles.CreateProduct).Methods("POST")
 	r.HandleFunc("/products", handles.GetProducts).Methods("GET")
 	log.Printf("Server start on port %s\n", serverPort)
 	if err := http.ListenAndServe(":"+serverPort, r); err != nil {

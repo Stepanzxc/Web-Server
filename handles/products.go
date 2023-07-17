@@ -3,10 +3,12 @@ package handles
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 
+	"web-server/database"
 	"web-server/find"
 	"web-server/gets"
 	"web-server/models"
@@ -17,7 +19,27 @@ import (
 )
 
 func GetProviders(w http.ResponseWriter, r *http.Request) {
-	response.Response(w, models.Providers)
+	db := database.Connect.Pool()
+
+	rows, err := db.Query("select provider_id from provider")
+	if err != nil {
+		response.ErrorFun(w, err)
+	}
+	result := make([]models.Prov, 0)
+
+	for rows.Next() {
+		var product models.Prov
+		err = rows.Scan(
+			&product.Id,
+		)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		result = append(result, product)
+
+	}
+	response.Response(w, result)
 }
 func GetProvidersById(w http.ResponseWriter, r *http.Request) {
 	id := gets.GetId(mux.Vars(r)["id"])
