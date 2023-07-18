@@ -24,7 +24,7 @@ func (m *MySQL) Pool() *sql.DB {
 }
 
 func initConnect() *sql.DB {
-	db, err := sql.Open("mysql", "test:test@tcp(127.0.0.1:3306)/test")
+	db, err := sql.Open("mysql", "stepan:secret2@tcp(127.0.0.1:3306)/market_place")
 	if err != nil {
 		panic(err.Error())
 	}
