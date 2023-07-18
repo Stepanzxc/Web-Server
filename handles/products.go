@@ -3,16 +3,15 @@ package handles
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"web-server/database"
 	"web-server/find"
 	"web-server/gets"
 	"web-server/models"
-	"web-server/remove"
 	"web-server/response"
 
 	"github.com/gorilla/mux"
@@ -21,22 +20,26 @@ import (
 func GetProviders(w http.ResponseWriter, r *http.Request) {
 	db := database.Connect.Pool()
 
-	rows, err := db.Query("select provider_id from provider")
+	rows, err := db.Query("select provider_id, title,created_at,status from provider")
 	if err != nil {
 		response.ErrorFun(w, err)
+		return
 	}
 	result := make([]models.Prov, 0)
 
 	for rows.Next() {
-		var product models.Prov
+		var provider models.Prov
 		err = rows.Scan(
-			&product.Id,
+			&provider.Id,
+			&provider.Title,
+			&provider.CreatedAt,
+			&provider.Status,
 		)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		result = append(result, product)
+		result = append(result, provider)
 
 	}
 	response.Response(w, result)
@@ -56,17 +59,20 @@ func GetProvidersById(w http.ResponseWriter, r *http.Request) {
 	response.Response(w, product)
 }
 func CreateProvider(w http.ResponseWriter, r *http.Request) {
+
 	var payload models.Prov
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		response.ErrorFun(w, err)
 
 	}
-	payload.Id = (models.Providers[len(models.Providers)-1].Id) + 1
-	payload.CreatedAt = time.Now().Format("2006-01-02T15:04:05Z07:00")
-	payload.Status = "active"
-	models.Providers = append(models.Providers, payload)
-	//Возвращаем клиенту что создали
-	response.Response(w, payload)
+	db := database.Connect.Pool()
+	resp := fmt.Sprintf("INSERT INTO provider (`title`) VALUES('%s')", payload.Title)
+	_, err := db.Query(resp)
+	if err != nil {
+		response.ErrorFun(w, err)
+		return
+	}
+	//response.Response(w, )
 }
 func UpdateProviderByID(w http.ResponseWriter, r *http.Request) {
 	id := gets.GetId(mux.Vars(r)["id"])
@@ -80,22 +86,19 @@ func UpdateProviderByID(w http.ResponseWriter, r *http.Request) {
 		response.ErrorFun(w, err)
 		return
 	}
-	provid, err := find.FindProviderByID(id)
+	db := database.Connect.Pool()
+	resp := fmt.Sprintf("UPDATE provider set title='%s' where provider_id=%s", payload.Title, strconv.Itoa(id))
+	_, err := db.Query(resp)
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
 	}
-	//Если в теле запроса передано значние то нужно перезаписать это значние
-	provid.Title = payload.Title
-	index, err := find.FindIndexProviderByID(id)
+	provider, err := find.FindProviderByID(id)
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
 	}
-	models.Providers[index] = provid
-
-	//Возвращаем клиенту что обновили
-	response.Response(w, provid)
+	response.Response(w, provider)
 }
 func DeleteProviderByID(w http.ResponseWriter, r *http.Request) {
 	id := gets.GetId(mux.Vars(r)["id"])
@@ -103,18 +106,13 @@ func DeleteProviderByID(w http.ResponseWriter, r *http.Request) {
 		response.ErrorFun(w, errors.New("invalid id"))
 		return
 	}
-	provid, err := find.FindProviderByID(id)
+	db := database.Connect.Pool()
+	resp := fmt.Sprintf("UPDATE provider set status='%s' where provider_id=%s", strconv.Itoa(0), strconv.Itoa(id))
+	_, err := db.Query(resp)
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
 	}
-	provid.Status = "disabled"
-	index, err := find.FindIndexProviderByID(id)
-	if err != nil {
-		response.ErrorFun(w, err)
-		return
-	}
-	models.Providers[index] = provid
 
 	//Возвращаем клиенту что обновили
 	response.Response(w, map[string]bool{"status": true})
@@ -124,16 +122,41 @@ func DeleteProviderByID(w http.ResponseWriter, r *http.Request) {
 // *http.Request - информация о запросе от клиента
 // http.ResponseWriter - что сервер ответит клиенту
 func GetProducts(w http.ResponseWriter, r *http.Request) {
+	db := database.Connect.Pool()
+	rows, err := db.Query("select *from product")
+	if err != nil {
+		response.ErrorFun(w, err)
+		return
+	}
+	result := make([]models.Prod, 0)
+
+	for rows.Next() {
+		var product models.Prod
+		err = rows.Scan(
+			&product.Id,
+			&product.ProviderId,
+			&product.Title,
+			&product.Description,
+			&product.Price,
+			&product.Brand,
+			&product.Category,
+		)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		result = append(result, product)
+	}
 	providerId := r.URL.Query().Get("provider_id")
 	id, err := strconv.Atoi(providerId)
 	if err != nil {
-		response.Response(w, models.Products)
+		response.Response(w, result)
 		return
 	}
 	var res []models.Prod
-	for i := range models.Products {
-		if models.Products[i].ProviderId == id {
-			res = append(res, models.Products[i])
+	for i := range result {
+		if result[i].ProviderId == id {
+			res = append(res, result[i])
 		}
 	}
 	if res == nil {
@@ -171,37 +194,18 @@ func UpdateByID(w http.ResponseWriter, r *http.Request) {
 		response.ErrorFun(w, err)
 		return
 	}
-
+	db := database.Connect.Pool()
+	resp := fmt.Sprintf("UPDATE product set  provider_id=%s, title='%s', description='%s', price=%s, brand='%s', category='%s'  where product_id=%s", strconv.Itoa(payload.ProviderId), payload.Title, payload.Description, strconv.Itoa(payload.Price), payload.Brand, payload.Category, strconv.Itoa(id))
+	_, err := db.Query(resp)
+	if err != nil {
+		response.ErrorFun(w, err)
+		return
+	}
 	product, err := find.FindProductByID(id)
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
 	}
-	//Если в теле запроса передано значние то нужно перезаписать это значние
-	if len(payload.Brand) > 0 {
-		product.Brand = payload.Brand
-	}
-	if len(payload.Title) > 0 {
-		product.Title = payload.Title
-	}
-	if len(payload.Description) > 0 {
-		product.Description = payload.Description
-	}
-	if len(payload.Category) > 0 {
-		product.Category = payload.Category
-	}
-	if payload.Price > 0 {
-		product.Price = payload.Price
-	}
-
-	index, err := find.FindIndexProductByID(id)
-	if err != nil {
-		response.ErrorFun(w, err)
-		return
-	}
-	models.Products[index] = product
-
-	//Возвращаем клиенту что обновили
 	response.Response(w, product)
 }
 
@@ -212,12 +216,13 @@ func DeleteByID(w http.ResponseWriter, r *http.Request) {
 		response.ErrorFun(w, errors.New("invalid id"))
 		return
 	}
-	index, err := find.FindIndexProductByID(id)
+	db := database.Connect.Pool()
+	resp := fmt.Sprintf("Delete from product  where product_id=%s", strconv.Itoa(id))
+	_, err := db.Query(resp)
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
 	}
-	models.Products = remove.RemoveByIndex(models.Products, index)
 
 	//Возвращаем клиенту что обновили
 	response.Response(w, map[string]bool{"status": true})
@@ -228,9 +233,13 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 	var payload models.Prod
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		response.ErrorFun(w, err)
+
 	}
-	payload.Id = (models.Products[len(models.Products)-1].Id) + 1
-	models.Products = append(models.Products, payload)
-	//Возвращаем клиенту что создали
-	response.Response(w, payload)
+	db := database.Connect.Pool()
+	resp := fmt.Sprintf("INSERT INTO product set  provider_id=%s, title='%s', description='%s', price=%s, brand='%s', category='%s'", strconv.Itoa(payload.ProviderId), payload.Title, payload.Description, strconv.Itoa(payload.Price), payload.Brand, payload.Category)
+	_, err := db.Query(resp)
+	if err != nil {
+		response.ErrorFun(w, err)
+		return
+	}
 }
