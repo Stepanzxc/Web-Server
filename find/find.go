@@ -3,6 +3,7 @@ package find
 import (
 	"errors"
 	"log"
+
 	"web-server/database"
 	"web-server/models"
 )
@@ -10,7 +11,8 @@ import (
 // findProductByID поиск продукта по ID
 func FindProductByID(id int) (models.Prod, error) {
 	db := database.Connect.Pool()
-	rows, err := db.Query("select *from product")
+	//TODO:: переделать на перечисление всех
+	rows, err := db.Query("select * from product")
 	if err != nil {
 		return models.Prod{}, err
 	}
@@ -49,7 +51,7 @@ func FindProductByID(id int) (models.Prod, error) {
 func FindProviderByID(id int) (models.Prov, error) {
 	db := database.Connect.Pool()
 
-	rows, err := db.Query("select provider_id,title,created_at,status from provider")
+	rows, err := db.Query("select provider_id,title,created_at,status from provider where provider_id=? limit 1", id)
 	if err != nil {
 		return models.Prov{}, err
 	}
@@ -68,18 +70,11 @@ func FindProviderByID(id int) (models.Prov, error) {
 		}
 		result = append(result, provider)
 	}
-	var newResult models.Prov
-	for i := range result {
-		if result[i].Id == id {
-			newResult = result[i]
-			break
-		}
-	}
 
-	if newResult.Id == 0 {
+	if len(result) == 0 {
 		return models.Prov{}, errors.New("provider does not exists")
 	}
-	return newResult, nil
+	return result[0], nil
 }
 
 func FindIndexProviderByID(id int) (int, error) {
