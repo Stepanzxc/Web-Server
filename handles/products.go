@@ -17,6 +17,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// GetProviders ...
 func GetProviders(w http.ResponseWriter, r *http.Request) {
 	db := database.Connect.Pool()
 
@@ -44,6 +45,8 @@ func GetProviders(w http.ResponseWriter, r *http.Request) {
 	}
 	response.Response(w, result)
 }
+
+// GetProvidersById ...
 func GetProvidersById(w http.ResponseWriter, r *http.Request) {
 	id := gets.GetId(mux.Vars(r)["id"])
 	if id <= 0 {
@@ -59,20 +62,29 @@ func GetProvidersById(w http.ResponseWriter, r *http.Request) {
 	response.Response(w, product)
 }
 func CreateProvider(w http.ResponseWriter, r *http.Request) {
-
 	var payload models.Prov
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		response.ErrorFun(w, err)
 
 	}
 	db := database.Connect.Pool()
-	resp := fmt.Sprintf("INSERT INTO provider (`title`) VALUES('%s')", payload.Title)
-	_, err := db.Query(resp)
+
+	res, err := db.Exec("INSERT INTO provider (title) VALUES(?)", payload.Title)
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
 	}
-	//response.Response(w, )
+	insertedID, err := res.LastInsertId()
+	if err != nil {
+		response.ErrorFun(w, err)
+		return
+	}
+	provider, err := find.FindProviderByID(int(insertedID))
+	if err != nil {
+		response.ErrorFun(w, err)
+		return
+	}
+	response.Response(w, provider)
 }
 func UpdateProviderByID(w http.ResponseWriter, r *http.Request) {
 	id := gets.GetId(mux.Vars(r)["id"])
@@ -87,8 +99,8 @@ func UpdateProviderByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db := database.Connect.Pool()
-	resp := fmt.Sprintf("UPDATE provider set title='%s' where provider_id=%s", payload.Title, strconv.Itoa(id))
-	_, err := db.Query(resp)
+
+	_, err := db.Query("UPDATE provider set title=? where provider_id=?", payload.Title, strconv.Itoa(id))
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
@@ -107,8 +119,8 @@ func DeleteProviderByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db := database.Connect.Pool()
-	resp := fmt.Sprintf("UPDATE provider set status='%s' where provider_id=%s", strconv.Itoa(0), strconv.Itoa(id))
-	_, err := db.Query(resp)
+
+	_, err := db.Query("UPDATE provider set status=? where provider_id=?", strconv.Itoa(0), strconv.Itoa(id))
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
