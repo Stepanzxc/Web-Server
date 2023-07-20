@@ -6,7 +6,6 @@ import (
 
 	"web-server/database"
 	"web-server/handles"
-	"web-server/store"
 
 	"github.com/gorilla/mux"
 )
@@ -16,15 +15,6 @@ const serverPort = "8080"
 func main() {
 	//делаем соединение с mysql
 	database.NewMySQL()
-
-	err := store.StoreDataInMemory()
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = store.ProvidersInMemory()
-	if err != nil {
-		log.Fatal(err)
-	}
 	r := mux.NewRouter()
 	r.HandleFunc("/providers", handles.GetProviders).Methods("GET")
 	r.HandleFunc("/providers/{id}", handles.GetProvidersById).Methods("GET")
