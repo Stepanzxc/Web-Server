@@ -9,25 +9,27 @@ import (
 )
 
 // findProductByID поиск продукта по ID
-func FindProductByID(id int) (models.Prod, error) {
+func FindProductByID(id int) (models.ProductWithProvider, error) {
 	db := database.Connect.Pool()
-	//TODO:: переделать на перечисление всех
-	rows, err := db.Query("select * from product")
+	rows, err := db.Query("select product_id, product.title, description, price, brand, category,provider.provider_id,provider.title,provider.created_at,provider.status from product INNER JOIN provider ON product.provider_id=provider.provider_id where product_id=?", id)
 	if err != nil {
-		return models.Prod{}, err
+		return models.ProductWithProvider{}, err
 	}
-	result := make([]models.Prod, 0)
+	result := make([]models.ProductWithProvider, 0)
 
 	for rows.Next() {
-		var product models.Prod
+		var product models.ProductWithProvider
 		err = rows.Scan(
 			&product.Id,
-			&product.ProviderId,
 			&product.Title,
 			&product.Description,
 			&product.Price,
 			&product.Brand,
 			&product.Category,
+			&product.Provider.Id,
+			&product.Provider.Title,
+			&product.Provider.CreatedAt,
+			&product.Provider.Status,
 		)
 		if err != nil {
 			log.Println(err)
@@ -35,29 +37,21 @@ func FindProductByID(id int) (models.Prod, error) {
 		}
 		result = append(result, product)
 	}
-	var newResult models.Prod
-	for i := range result {
-		if result[i].Id == id {
-			newResult = result[i]
-			break
-		}
+	if len(result) == 0 {
+		return models.ProductWithProvider{}, errors.New("product does not exists")
 	}
-
-	if newResult.Id == 0 {
-		return models.Prod{}, errors.New("provider does not exists")
-	}
-	return newResult, nil
+	return result[0], nil
 }
-func FindProviderByID(id int) (models.Prov, error) {
+func FindProviderByID(id int) (models.Providers, error) {
 	db := database.Connect.Pool()
 
 	rows, err := db.Query("select provider_id,title,created_at,status from provider where provider_id=? limit 1", id)
 	if err != nil {
-		return models.Prov{}, err
+		return models.Providers{}, err
 	}
-	result := make([]models.Prov, 0)
+	result := make([]models.Providers, 0)
 	for rows.Next() {
-		var provider models.Prov
+		var provider models.Providers
 		err = rows.Scan(
 			&provider.Id,
 			&provider.Title,
@@ -72,26 +66,7 @@ func FindProviderByID(id int) (models.Prov, error) {
 	}
 
 	if len(result) == 0 {
-		return models.Prov{}, errors.New("provider does not exists")
+		return models.Providers{}, errors.New("provider does not exists")
 	}
 	return result[0], nil
-}
-
-func FindIndexProviderByID(id int) (int, error) {
-	for i := range models.Providers {
-		if models.Providers[i].Id == id {
-			return i, nil
-		}
-	}
-	return 0, errors.New("provider index does not exists")
-}
-
-// findProductByID поиск продукта по ID
-func FindIndexProductByID(id int) (int, error) {
-	for i := range models.Products {
-		if models.Products[i].Id == id {
-			return i, nil
-		}
-	}
-	return 0, errors.New("product index does not exists")
 }
