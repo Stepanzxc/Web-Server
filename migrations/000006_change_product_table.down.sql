@@ -1,0 +1,1 @@
+ALTER TABLE product DROP FOREIGN KEY fk_category_id;

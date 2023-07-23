@@ -8,10 +8,37 @@ import (
 	"web-server/models"
 )
 
+func FindCategoryByID(id int) (models.Category, error) {
+	db := database.Connect.Pool()
+
+	rows, err := db.Query("select category_id,title from category where category_id=? limit 1", id)
+	if err != nil {
+		return models.Category{}, err
+	}
+	result := make([]models.Category, 0)
+	for rows.Next() {
+		var provider models.Category
+		err = rows.Scan(
+			&provider.Id,
+			&provider.Title,
+		)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		result = append(result, provider)
+	}
+
+	if len(result) == 0 {
+		return models.Category{}, errors.New("category does not exists")
+	}
+	return result[0], nil
+}
+
 // findProductByID поиск продукта по ID
 func FindProductByID(id int) (models.ProductWithProvider, error) {
 	db := database.Connect.Pool()
-	rows, err := db.Query("select product_id, product.title, description, price, brand, category,provider.provider_id,provider.title,provider.created_at,provider.status from product INNER JOIN provider ON product.provider_id=provider.provider_id where product_id=?", id)
+	rows, err := db.Query("select product_id, product.title, description, price, brand,category.category_id,category.title,provider.provider_id,provider.title,provider.created_at,provider.status from product inner join category  on product.category_id = category.category_id INNER JOIN provider ON product.provider_id=provider.provider_id where product_id=?", id)
 	if err != nil {
 		return models.ProductWithProvider{}, err
 	}
@@ -25,7 +52,8 @@ func FindProductByID(id int) (models.ProductWithProvider, error) {
 			&product.Description,
 			&product.Price,
 			&product.Brand,
-			&product.Category,
+			&product.Category.Id,
+			&product.Category.Title,
 			&product.Provider.Id,
 			&product.Provider.Title,
 			&product.Provider.CreatedAt,
