@@ -1,2 +1,2 @@
-ALTER TABLE product
-ADD category  VARCHAR(255) not null,
+ALTER TABLE product DROP FOREIGN KEY fk_category_id;
+ALTER TABLE product DROP COLUMN category_id;
