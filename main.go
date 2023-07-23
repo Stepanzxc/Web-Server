@@ -16,6 +16,12 @@ func main() {
 	//делаем соединение с mysql
 	database.NewMySQL()
 	r := mux.NewRouter()
+	r.HandleFunc("/category", handles.GetCategory).Methods("GET")
+	r.HandleFunc("/category/{id}", handles.GetCategoryById).Methods("GET")
+	r.HandleFunc("/category", handles.CreateCategory).Methods("POST")
+	r.HandleFunc("/category/{id}", handles.UpdateByIDCategory).Methods("PATCH")
+	r.HandleFunc("/category/{id}", handles.DeleteByIDCategory).Methods("DELETE")
+
 	r.HandleFunc("/providers", handles.GetProviders).Methods("GET")
 	r.HandleFunc("/providers/{id}", handles.GetProvidersById).Methods("GET")
 	r.HandleFunc("/providers", handles.CreateProvider).Methods("POST")

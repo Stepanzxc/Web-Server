@@ -21,7 +21,7 @@ import (
 // http.ResponseWriter - что сервер ответит клиенту
 func GetProducts(w http.ResponseWriter, r *http.Request) {
 	db := database.Connect.Pool()
-	rows, err := db.Query("select product_id, product.title, description, price, brand, category,provider.provider_id,provider.title,provider.created_at,provider.status from product INNER JOIN provider ON product.provider_id=provider.provider_id")
+	rows, err := db.Query("select product_id, product.title, description, price, brand,category.category_id,category.title,provider.provider_id,provider.title,provider.created_at,provider.status from product inner join category  on product.category_id = category.category_id INNER JOIN provider ON product.provider_id=provider.provider_id")
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
@@ -36,7 +36,8 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 			&product.Description,
 			&product.Price,
 			&product.Brand,
-			&product.Category,
+			&product.Category.Id,
+			&product.Category.Title,
 			&product.Provider.Id,
 			&product.Provider.Title,
 			&product.Provider.CreatedAt,
@@ -96,7 +97,7 @@ func UpdateByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db := database.Connect.Pool()
-	_, err := db.Query("UPDATE product set  provider_id=?, title=?, description=?, price=?, brand=?, category=?  where product_id=?", strconv.Itoa(payload.Provider.Id), payload.Title, payload.Description, strconv.Itoa(payload.Price), payload.Brand, payload.Category, strconv.Itoa(id))
+	_, err := db.Query("UPDATE product set  provider_id=?, title=?, description=?, price=?, brand=?, category_id=?  where product_id=?", strconv.Itoa(payload.Provider.Id), payload.Title, payload.Description, strconv.Itoa(payload.Price), payload.Brand, strconv.Itoa(payload.Category.Id), strconv.Itoa(id))
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
@@ -135,7 +136,7 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	}
 	db := database.Connect.Pool()
-	res, err := db.Exec("INSERT INTO product set  provider_id=?, title=?, description=?, price=?, brand=?, category=?", strconv.Itoa(payload.Provider.Id), payload.Title, payload.Description, strconv.Itoa(payload.Price), payload.Brand, payload.Category)
+	res, err := db.Exec("INSERT INTO product set  provider_id=?, title=?, description=?, price=?, brand=?, category_id=?", strconv.Itoa(payload.Provider.Id), payload.Title, payload.Description, strconv.Itoa(payload.Price), payload.Brand, strconv.Itoa(payload.Category.Id))
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
