@@ -9,7 +9,7 @@ var event string
 
 func main() {
 
-	flag.StringVar(&event, "event", "createProduct", "number of lines to read from the file")
+	flag.StringVar(&event, "event", "createProduct", "Create new product")
 	flag.Parse()
 	log.Println(event)
 }
