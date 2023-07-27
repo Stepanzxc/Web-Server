@@ -1,11 +1,11 @@
-package createTables
+package create_tables_cmd
 
 import (
 	"web-server/database"
 	"web-server/pkg/faker"
 )
 
-func CreateProvider() error {
+func CreateProviderFromCmd() error {
 	title := faker.RandomWordFromFile("resources/mock/titleProvider.txt")
 	db := database.Connect.Pool()
 

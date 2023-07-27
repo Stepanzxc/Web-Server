@@ -1,4 +1,4 @@
-package createTables
+package create_tables_cmd
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 	"web-server/pkg/faker"
 )
 
-func CreateProduct() error {
+func CreateProductFromCmd() error {
 	title := faker.RandomWordFromFile("resources/mock/titleProduct.txt")
 	description := faker.RandomWordFromFile("resources/mock/descriptionProduct.txt")
 	brand := faker.RandomWordFromFile("resources/mock/brandProduct.txt")
@@ -37,7 +37,7 @@ func CreateProduct() error {
 			provider_id = result[rand.Intn(len(result))]
 			next = true
 		} else {
-			if err := CreateProvider(); err != nil {
+			if err := CreateProviderFromCmd(); err != nil {
 				return err
 			}
 
@@ -65,7 +65,7 @@ func CreateProduct() error {
 			category_id = newresult[rand.Intn(len(newresult))]
 			next = true
 		} else {
-			if err := CreateCategory(); err != nil {
+			if err := CreateCategoryFromCmd(); err != nil {
 				return err
 			}
 		}

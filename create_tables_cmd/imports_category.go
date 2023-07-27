@@ -1,11 +1,11 @@
-package createTables
+package create_tables_cmd
 
 import (
 	"web-server/database"
 	"web-server/pkg/faker"
 )
 
-func CreateCategory() error {
+func CreateCategoryFromCmd() error {
 	title := faker.RandomWordFromFile("resources/mock/titleCategory.txt")
 	db := database.Connect.Pool()
 	_, err := db.Query("INSERT INTO category set title=?", title)
