@@ -1,4 +1,4 @@
-package create_tables_cmd
+package imports
 
 import (
 	"log"

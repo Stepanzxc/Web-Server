@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"log"
-	"web-server/create_tables_cmd"
 	"web-server/database"
+	"web-server/imports"
 )
 
 var event string
@@ -19,17 +19,17 @@ func main() {
 	for i := 0; i < count; i++ {
 		switch event {
 		case "createCategory":
-			err = create_tables_cmd.CreateCategoryFromCmd()
+			err = imports.CreateCategoryFromCmd()
 			if err != nil {
 				log.Fatal(err)
 			}
 		case "createProvider":
-			err = create_tables_cmd.CreateProviderFromCmd()
+			err = imports.CreateProviderFromCmd()
 			if err != nil {
 				log.Fatal(err)
 			}
 		case "createProduct":
-			err = create_tables_cmd.CreateProductFromCmd()
+			err = imports.CreateProductFromCmd()
 			if err != nil {
 				log.Fatal(err)
 			}
