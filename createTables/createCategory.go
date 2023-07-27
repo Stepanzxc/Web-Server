@@ -6,7 +6,7 @@ import (
 )
 
 func CreateCategory() error {
-	title := faker.RandomWordFromFile("titleCategory.txt")
+	title := faker.RandomWordFromFile("resources/mock/titleCategory.txt")
 	db := database.Connect.Pool()
 	_, err := db.Query("INSERT INTO category set title=?", title)
 	return err

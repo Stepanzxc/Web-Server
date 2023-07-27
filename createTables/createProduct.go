@@ -8,9 +8,9 @@ import (
 )
 
 func CreateProduct() error {
-	title := faker.RandomWordFromFile("titleProduct.txt")
-	description := faker.RandomWordFromFile("descriptionProduct.txt")
-	brand := faker.RandomWordFromFile("brandProduct.txt")
+	title := faker.RandomWordFromFile("resources/mock/titleProduct.txt")
+	description := faker.RandomWordFromFile("resources/mock/descriptionProduct.txt")
+	brand := faker.RandomWordFromFile("resources/mock/brandProduct.txt")
 	price := rand.Intn(15000)
 	db := database.Connect.Pool()
 	next := false
