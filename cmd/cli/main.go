@@ -13,7 +13,7 @@ var err error
 func main() {
 	var count int
 	database.NewMySQL()
-	flag.StringVar(&event, "event", "", "Create new product")
+	flag.StringVar(&event, "event", "", "create new product")
 	flag.IntVar(&count, "count", 1, "number of creating tables")
 	flag.Parse()
 	for i := 0; i < count; i++ {

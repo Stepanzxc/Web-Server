@@ -49,7 +49,7 @@ func CreateProduct() error {
 		if err != nil {
 			return err
 		}
-		var Newresult []int
+		var newresult []int
 		for rows.Next() {
 			var product int
 			err = rows.Scan(
@@ -59,10 +59,10 @@ func CreateProduct() error {
 				log.Println(err)
 				continue
 			}
-			Newresult = append(Newresult, product)
+			newresult = append(newresult, product)
 		}
-		if Newresult != nil {
-			category_id = Newresult[rand.Intn(len(Newresult))]
+		if newresult != nil {
+			category_id = newresult[rand.Intn(len(newresult))]
 			next = true
 		} else {
 			if err := CreateCategory(); err != nil {
