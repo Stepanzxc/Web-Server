@@ -1,4 +1,4 @@
-create table if not exists order_information
+create table if not exists product_order
 (
     product_id  int          not null,
     order_id int          not null,
