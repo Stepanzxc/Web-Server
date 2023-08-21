@@ -154,16 +154,16 @@ func FindOrderByID(id int) (models.Order, error) {
 	return result[0], nil
 }
 
-func FindProduct_OrderByID(id int, q int) (models.Product_Order, error) {
+func FindProductOrderByID(id int, q int) (models.ProductOrder, error) {
 	db := database.Connect.Pool()
 
 	rows, err := db.Query("select p.product_id,p.title,p.description,p.brand,p.price,prov.provider_id,prov.title,prov.created_at,prov.status,c.category_id,c.title,o.order_id,o.price,o.created_at,client.client_id,client.address, product_order.quantity from product_order inner join product p on product_order.product_id = p.product_id inner join provider prov on p.provider_id = prov.provider_id inner join category c on p.category_id = c.category_id inner join `order` o on product_order.order_id = o.order_id inner join client  on o.client_id=client.client_id where product_order.product_id=? and product_order.order_id=? limit 1", id, q)
 	if err != nil {
-		return models.Product_Order{}, err
+		return models.ProductOrder{}, err
 	}
-	result := make([]models.Product_Order, 0)
+	result := make([]models.ProductOrder, 0)
 	for rows.Next() {
-		var product_order models.Product_Order
+		var pOrder models.ProductOrder
 		err = rows.Scan(
 			&product_order.Product.Id,
 			&product_order.Product.Title,
@@ -191,7 +191,7 @@ func FindProduct_OrderByID(id int, q int) (models.Product_Order, error) {
 	}
 
 	if len(result) == 0 {
-		return models.Product_Order{}, errors.New("product_order does not exists")
+		return models.ProductOrder{}, errors.New("product_order does not exists")
 	}
 	return result[0], nil
 }

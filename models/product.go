@@ -1,6 +1,6 @@
 package models
 
-type Product_Order struct {
+type ProductOrder struct {
 	Product  ProductWithProvider `json:"product"`
 	Order    Order               `json:"order"`
 	Quantity int                 `json:"quantity"`

@@ -23,34 +23,34 @@ func GetProduct_order(w http.ResponseWriter, r *http.Request) {
 		response.ErrorFun(w, err)
 		return
 	}
-	result := make([]models.Product_Order, 0)
+	result := make([]models.ProductOrder, 0)
 
 	for rows.Next() {
-		var product_order models.Product_Order
+		var pOrder models.ProductOrder
 		err = rows.Scan(
-			&product_order.Product.Id,
-			&product_order.Product.Title,
-			&product_order.Product.Description,
-			&product_order.Product.Brand,
-			&product_order.Product.Price,
-			&product_order.Product.Provider.Id,
-			&product_order.Product.Provider.Title,
-			&product_order.Product.Provider.CreatedAt,
-			&product_order.Product.Provider.Status,
-			&product_order.Product.Category.Id,
-			&product_order.Product.Category.Title,
-			&product_order.Order.Id,
-			&product_order.Order.Price,
-			&product_order.Order.CreatedAt,
-			&product_order.Order.Client.Id,
-			&product_order.Order.Client.Address,
-			&product_order.Quantity,
+			&pOrder.Product.Id,
+			&pOrder.Product.Title,
+			&pOrder.Product.Description,
+			&pOrder.Product.Brand,
+			&pOrder.Product.Price,
+			&pOrder.Product.Provider.Id,
+			&pOrder.Product.Provider.Title,
+			&pOrder.Product.Provider.CreatedAt,
+			&pOrder.Product.Provider.Status,
+			&pOrder.Product.Category.Id,
+			&pOrder.Product.Category.Title,
+			&pOrder.Order.Id,
+			&pOrder.Order.Price,
+			&pOrder.Order.CreatedAt,
+			&pOrder.Order.Client.Id,
+			&pOrder.Order.Client.Address,
+			&pOrder.Quantity,
 		)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		result = append(result, product_order)
+		result = append(result, pOrder)
 	}
 
 	response.Response(w, result)
@@ -64,7 +64,7 @@ func GetProduct_OrderById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product_order, err := find.FindProduct_OrderByID(id, q)
+	product_order, err := find.FindProductOrderByID(id, q)
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
@@ -80,7 +80,7 @@ func UpdateProduct_OrderByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var payload models.Product_Order
+	var payload models.ProductOrder
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		response.ErrorFun(w, err)
 		return
@@ -91,7 +91,7 @@ func UpdateProduct_OrderByID(w http.ResponseWriter, r *http.Request) {
 		response.ErrorFun(w, err)
 		return
 	}
-	product_order, err := find.FindProduct_OrderByID(payload.Product.Id, payload.Order.Id)
+	product_order, err := find.FindProductOrderByID(payload.Product.Id, payload.Order.Id)
 	if err != nil {
 		response.ErrorFun(w, err)
 		return
@@ -118,7 +118,7 @@ func DeleteProduct_OrderByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateProduct_Order(w http.ResponseWriter, r *http.Request) {
-	var payload models.Product_Order
+	var payload models.ProductOrder
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		response.ErrorFun(w, err)
 
@@ -134,34 +134,34 @@ func CreateProduct_Order(w http.ResponseWriter, r *http.Request) {
 		response.ErrorFun(w, err)
 		return
 	}
-	result := make([]models.Product_Order, 0)
+	result := make([]models.ProductOrder, 0)
 
 	for rows.Next() {
-		var product_order models.Product_Order
+		var pOrder models.ProductOrder
 		err = rows.Scan(
-			&product_order.Product.Id,
-			&product_order.Product.Title,
-			&product_order.Product.Description,
-			&product_order.Product.Brand,
-			&product_order.Product.Price,
-			&product_order.Product.Provider.Id,
-			&product_order.Product.Provider.Title,
-			&product_order.Product.Provider.CreatedAt,
-			&product_order.Product.Provider.Status,
-			&product_order.Product.Category.Id,
-			&product_order.Product.Category.Title,
-			&product_order.Order.Id,
-			&product_order.Order.Price,
-			&product_order.Order.CreatedAt,
-			&product_order.Order.Client.Id,
-			&product_order.Order.Client.Address,
-			&product_order.Quantity,
+			&pOrder.Product.Id,
+			&pOrder.Product.Title,
+			&pOrder.Product.Description,
+			&pOrder.Product.Brand,
+			&pOrder.Product.Price,
+			&pOrder.Product.Provider.Id,
+			&pOrder.Product.Provider.Title,
+			&pOrder.Product.Provider.CreatedAt,
+			&pOrder.Product.Provider.Status,
+			&pOrder.Product.Category.Id,
+			&pOrder.Product.Category.Title,
+			&pOrder.Order.Id,
+			&pOrder.Order.Price,
+			&pOrder.Order.CreatedAt,
+			&pOrder.Order.Client.Id,
+			&pOrder.Order.Client.Address,
+			&pOrder.Quantity,
 		)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		result = append(result, product_order)
+		result = append(result, pOrder)
 	}
 
 	response.Response(w, result)
