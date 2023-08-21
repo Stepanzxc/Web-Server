@@ -16,6 +16,30 @@ func main() {
 	//делаем соединение с mysql
 	database.NewMySQL()
 	r := mux.NewRouter()
+	r.HandleFunc("/product_order", handles.GetProduct_order).Methods("GET")
+	r.HandleFunc("/product_order/{id}/{q}", handles.GetProduct_OrderById).Methods("GET")
+	r.HandleFunc("/product_order", handles.CreateProduct_Order).Methods("POST")
+	r.HandleFunc("/product_order/{id}/{q}", handles.UpdateProduct_OrderByID).Methods("PATCH")
+	r.HandleFunc("/product_order/{id}/{q}", handles.DeleteProduct_OrderByID).Methods("DELETE")
+
+	r.HandleFunc("/order", handles.GetOrder).Methods("GET")
+	r.HandleFunc("/order/{id}", handles.GetOrderById).Methods("GET")
+	r.HandleFunc("/order", handles.CreateOrder).Methods("POST")
+	r.HandleFunc("/order/{id}", handles.UpdateOrderByID).Methods("PATCH")
+	r.HandleFunc("/order/{id}", handles.DeleteOrderByID).Methods("DELETE")
+
+	r.HandleFunc("/order", handles.GetOrder).Methods("GET")
+	r.HandleFunc("/order/{id}", handles.GetOrderById).Methods("GET")
+	r.HandleFunc("/order", handles.CreateOrder).Methods("POST")
+	r.HandleFunc("/order/{id}", handles.UpdateOrderByID).Methods("PATCH")
+	r.HandleFunc("/order/{id}", handles.DeleteOrderByID).Methods("DELETE")
+
+	r.HandleFunc("/client", handles.GetClient).Methods("GET")
+	r.HandleFunc("/client/{id}", handles.GetClientsById).Methods("GET")
+	r.HandleFunc("/client", handles.CreateClient).Methods("POST")
+	r.HandleFunc("/client/{id}", handles.UpdateClientByID).Methods("PATCH")
+	r.HandleFunc("/client/{id}", handles.DeleteClientByID).Methods("DELETE")
+
 	r.HandleFunc("/category", handles.GetCategory).Methods("GET")
 	r.HandleFunc("/category/{id}", handles.GetCategoryById).Methods("GET")
 	r.HandleFunc("/category", handles.CreateCategory).Methods("POST")
